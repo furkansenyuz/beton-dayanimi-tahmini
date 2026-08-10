@@ -5,3 +5,11 @@ TRAI bootcamp final ödevim. İnşaat sektöründe çalışıyorum, o yüzden ke
 Demoda ayrıca TS EN 206-1 katmanı var: model tahmini Çizelge 14 uygunluk kriteriyle karakteristik dayanıma çevriliyor, sonuç Çizelge F.1'deki etki sınıfı sınır değerleriyle (en büyük su/çimento, en küçük dayanım sınıfı, en az çimento) karşılaştırılıyor. Uçucu kül k-değeri Madde 5.2.5.2.2'ye göre uygulanıyor.
 
 Notebook: beton_dayanimi_tahmini.ipynb (Google Colab'da çalışır), grafikler grafikler/ klasöründe, Medium yazısının taslağı medium_yazisi.md dosyasında.
+
+Canlı demo: https://furkansenyuz.com/beton-dayanimi-tahmini/demo/ (model tarayıcıda çalışıyor, sunucu yok)
+
+Medium yazısı:
+
+Veri seti: https://archive.ics.uci.edu/dataset/165/concrete+compressive+strength
+
+Furkan Şenyüz

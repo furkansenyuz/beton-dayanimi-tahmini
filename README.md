@@ -8,7 +8,7 @@ Notebook: beton_dayanimi_tahmini.ipynb (Google Colab'da çalışır), grafikler 
 
 Canlı demo: https://furkansenyuz.com/beton-dayanimi-tahmini/demo/ (model tarayıcıda çalışıyor, sunucu yok)
 
-Medium yazısı:
+Medium yazısı: https://furkansenyuz.medium.com/betonun-28-g%C3%BCn-s%C4%B1rr%C4%B1-bas%C4%B1n%C3%A7-dayan%C4%B1m%C4%B1n%C4%B1-makine-%C3%B6%C4%9Frenmesiyle-tahmin-etmek-e0b5353eb6be
 
 Veri seti: https://archive.ics.uci.edu/dataset/165/concrete+compressive+strength
 

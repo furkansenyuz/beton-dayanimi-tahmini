@@ -1,0 +1,1239 @@
+<title>Beton Basınç Dayanımı Tahmini | Furkan Şenyüz</title>
+<style>
+  :root {
+    --ground: #f0efec;
+    --surface: #fffefc;
+    --surface-sunk: #e7e4de;
+    --ink: #1c1a17;
+    --ink-soft: #6b665e;
+    --ink-faint: #6f6a62;
+    --line: #d9d5ce;
+    --line-soft: #e8e5df;
+    --accent: #1d4e79;
+    --accent-soft: #dce6f0;
+    --zayif: #8f4823;
+    --zayif-soft: #f4e5da;
+    --orta: #7a5d10;
+    --orta-soft: #f3ecd6;
+    --guclu: #2f6b46;
+    --guclu-soft: #dcebe1;
+    --shadow: 0 1px 2px rgba(28, 26, 23, .07);
+
+    --serif: Georgia, "Times New Roman", "Nimbus Roman", serif;
+    --sans: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    --mono: ui-monospace, "SF Mono", "Cascadia Mono", "Roboto Mono", Menlo, Consolas, monospace;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --ground: #14120f;
+      --surface: #1c1a16;
+      --surface-sunk: #2a2620;
+      --ink: #ece9e3;
+      --ink-soft: #a49e94;
+      --ink-faint: #97917f;
+      --line: #35302a;
+      --line-soft: #262320;
+      --accent: #7cb0e0;
+      --accent-soft: #182a3a;
+      --zayif: #d68f62;
+      --zayif-soft: #2e2019;
+      --orta: #d3ae4e;
+      --orta-soft: #2c2617;
+      --guclu: #61ad7e;
+      --guclu-soft: #17281d;
+      --shadow: 0 1px 2px rgba(0, 0, 0, .35);
+    }
+  }
+
+  :root[data-theme="dark"] {
+    --ground: #14120f;
+    --surface: #1c1a16;
+    --surface-sunk: #2a2620;
+    --ink: #ece9e3;
+    --ink-soft: #a49e94;
+    --ink-faint: #97917f;
+    --line: #35302a;
+    --line-soft: #262320;
+    --accent: #7cb0e0;
+    --accent-soft: #182a3a;
+    --zayif: #d68f62;
+    --zayif-soft: #2e2019;
+    --orta: #d3ae4e;
+    --orta-soft: #2c2617;
+    --guclu: #61ad7e;
+    --guclu-soft: #17281d;
+    --shadow: 0 1px 2px rgba(0, 0, 0, .35);
+  }
+
+  body {
+    background: var(--ground);
+    color: var(--ink);
+    font-family: var(--sans);
+    font-size: 16px;
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .wrap {
+    max-width: 1120px; margin: 0 auto;
+    padding: clamp(1.75rem, 4vw, 3.5rem) clamp(1rem, 4vw, 2rem) 4rem;
+    display: flex; flex-direction: column; gap: clamp(1.35rem, 2.6vw, 2rem);
+  }
+
+  @keyframes yuksel {
+    from { opacity: 0; transform: translateY(10px); }
+    to   { opacity: 1; transform: none; }
+  }
+  .wrap > * { animation: yuksel .5s cubic-bezier(.22, 1, .36, 1) backwards; }
+  .wrap > *:nth-child(1) { animation-delay: .02s; }
+  .wrap > *:nth-child(2) { animation-delay: .09s; }
+  .wrap > *:nth-child(3) { animation-delay: .16s; }
+  .wrap > *:nth-child(4) { animation-delay: .23s; }
+  .wrap > *:nth-child(5) { animation-delay: .3s; }
+
+  /* ---------- başlık ---------- */
+  .masthead { display: flex; flex-direction: column; gap: .75rem; }
+  .eyebrow {
+    font-family: var(--mono); font-size: .68rem; letter-spacing: .1em;
+    text-transform: uppercase; color: var(--accent);
+  }
+  h1 {
+    font-family: var(--serif); font-size: clamp(1.8rem, 4.4vw, 2.7rem);
+    line-height: 1.14; letter-spacing: -.01em; font-weight: 400; text-wrap: balance;
+  }
+  .lead { max-width: 62ch; color: var(--ink-soft); font-size: 1.02rem; }
+  .masthead-links {
+    display: flex; flex-wrap: wrap; gap: 1.25rem;
+    font-family: var(--mono); font-size: .78rem; padding-top: .25rem;
+  }
+  a { color: var(--accent); text-decoration-thickness: 1px; text-underline-offset: 3px; }
+  a:hover { text-decoration-thickness: 2px; }
+  :focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; border-radius: 2px; }
+
+  /* ---------- birim çubuğu ---------- */
+  .unitbar {
+    display: flex; align-items: center; flex-wrap: wrap; gap: .7rem;
+    padding: .55rem .75rem; background: var(--surface);
+    border: 1px solid var(--line); border-radius: 3px; box-shadow: var(--shadow);
+  }
+  .unitbar-lbl {
+    font-family: var(--mono); font-size: .68rem; letter-spacing: .1em;
+    text-transform: uppercase; color: var(--ink-soft);
+  }
+  .unitbar-active {
+    font-family: var(--mono); font-size: .75rem; color: var(--ink-faint);
+    margin-left: auto; font-variant-numeric: tabular-nums;
+  }
+
+  /* ---------- panel ---------- */
+  .panel { display: grid; gap: 1.25rem; grid-template-columns: minmax(0, 1fr); }
+  @media (min-width: 900px) {
+    .panel { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); align-items: start; }
+    .recete { grid-column: 1; grid-row: 1; }
+    .tahmin { grid-column: 2; grid-row: 1; }
+  }
+
+  .card {
+    background: var(--surface); border: 1px solid var(--line);
+    border-radius: 3px; box-shadow: var(--shadow);
+    padding: clamp(1.1rem, 2.5vw, 1.5rem);
+    display: flex; flex-direction: column; gap: 1.1rem;
+  }
+  .card-head {
+    display: flex; align-items: baseline; justify-content: space-between;
+    gap: 1rem; border-bottom: 1px solid var(--line-soft); padding-bottom: .8rem;
+  }
+  .card-title {
+    font-family: var(--mono); font-size: .7rem; letter-spacing: .12em;
+    text-transform: uppercase; color: var(--ink-soft);
+  }
+  .btn-reset {
+    font-family: var(--mono); font-size: .7rem; letter-spacing: .06em;
+    text-transform: uppercase; color: var(--ink-soft); background: none;
+    border: 1px solid var(--line); border-radius: 2px; padding: .28rem .6rem;
+    cursor: pointer; transition: color .15s, border-color .15s;
+  }
+  .btn-reset:hover { color: var(--accent); border-color: var(--accent); }
+
+  /* ---------- senaryolar ---------- */
+  .scn-block { display: flex; flex-direction: column; gap: .55rem; }
+  .scn-hint { font-size: .85rem; color: var(--ink-soft); }
+  .scn-list { display: flex; flex-wrap: wrap; gap: .4rem; }
+  .scn {
+    font-size: .82rem; padding: .38rem .7rem;
+    border: 1px solid var(--line); border-radius: 2px;
+    background: var(--surface); color: var(--ink-soft); cursor: pointer;
+    transition: color .15s, border-color .15s, background-color .15s, transform .12s;
+  }
+  .scn:hover { color: var(--accent); border-color: var(--accent); }
+  .scn:active { transform: scale(.97); }
+  .scn[aria-pressed="true"] {
+    background: var(--accent-soft); border-color: var(--accent); color: var(--accent);
+  }
+
+  /* ---------- kaydırıcılar ---------- */
+  .fields { display: flex; flex-direction: column; gap: .95rem; }
+  .field { display: flex; flex-direction: column; gap: .28rem; }
+  .field-top { display: flex; align-items: baseline; justify-content: space-between; gap: .75rem; }
+  .field-label {
+    font-family: var(--mono); font-size: .71rem; letter-spacing: .06em;
+    text-transform: uppercase; color: var(--ink-soft);
+  }
+  .field-value {
+    font-family: var(--mono); font-size: .93rem;
+    font-variant-numeric: tabular-nums; color: var(--ink);
+  }
+  .field-value .unit { color: var(--ink-faint); font-size: .76rem; margin-left: .2rem; }
+
+  .slider-wrap { position: relative; height: 22px; }
+  .slider-rail, .slider-band {
+    position: absolute; top: 50%; transform: translateY(-50%);
+    height: 3px; border-radius: 2px; pointer-events: none;
+  }
+  .slider-rail { left: 7px; right: 7px; background: var(--line); }
+  .slider-band { background: var(--accent-soft); }
+
+  input[type="range"] {
+    -webkit-appearance: none; appearance: none; position: relative;
+    width: 100%; height: 22px; background: none; cursor: pointer; margin: 0;
+  }
+  input[type="range"]::-webkit-slider-runnable-track { height: 3px; background: transparent; }
+  input[type="range"]::-moz-range-track { height: 3px; background: transparent; }
+  input[type="range"]::-webkit-slider-thumb {
+    -webkit-appearance: none; appearance: none;
+    width: 15px; height: 15px; margin-top: -6px; border-radius: 2px;
+    background: var(--surface); border: 2px solid var(--accent); transition: transform .12s;
+  }
+  input[type="range"]::-moz-range-thumb {
+    width: 15px; height: 15px; border: 2px solid var(--accent);
+    border-radius: 2px; background: var(--surface);
+  }
+  input[type="range"]:active::-webkit-slider-thumb { transform: scale(1.18); }
+
+  .seg { display: flex; gap: .4rem; }
+  .seg label {
+    flex: 0 0 auto; position: relative; font-family: var(--mono); font-size: .74rem;
+    text-align: center; padding: .24rem .7rem; border: 1px solid var(--line);
+    border-radius: 2px; color: var(--ink-soft); cursor: pointer;
+    transition: color .15s, border-color .15s, background-color .15s;
+  }
+  .seg input { position: absolute; opacity: 0; inset: 0; cursor: pointer; }
+  .seg label:has(input:checked) {
+    border-color: var(--accent); background: var(--accent-soft); color: var(--accent);
+  }
+  .seg label:has(input:focus-visible) { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+  details.ekstra { border-top: 1px solid var(--line-soft); padding-top: .7rem; }
+  details.ekstra summary {
+    font-family: var(--mono); font-size: .7rem; letter-spacing: .06em;
+    text-transform: uppercase; color: var(--ink-soft); cursor: pointer; list-style: none;
+  }
+  details.ekstra summary::-webkit-details-marker { display: none; }
+  details.ekstra summary::before { content: "+ "; color: var(--accent); }
+  details.ekstra[open] summary::before { content: "− "; }
+  details.ekstra summary:hover { color: var(--accent); }
+
+  .secim {
+    width: 100%; padding: .4rem .5rem; border: 1px solid var(--line); border-radius: 2px;
+    background: var(--surface); color: var(--ink); font-size: .85rem;
+  }
+  .secim:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
+  details.ekstra .fields { margin-top: .85rem; }
+
+  /* ---------- tahmin ---------- */
+  .gorsel-gizli {
+    position: absolute; width: 1px; height: 1px; overflow: hidden;
+    clip-path: inset(50%); white-space: nowrap;
+  }
+  .sonuc { display: flex; align-items: baseline; gap: .7rem; flex-wrap: wrap; }
+  .sonuc-num {
+    font-family: var(--mono); font-size: clamp(2.6rem, 8vw, 3.4rem);
+    font-weight: 500; line-height: 1; font-variant-numeric: tabular-nums; letter-spacing: -.03em;
+  }
+  .sonuc-birim { font-family: var(--mono); font-size: 1.05rem; color: var(--ink-faint); }
+  .sonuc-alt { font-family: var(--mono); font-size: .82rem; color: var(--ink-faint); }
+
+  .chip {
+    font-family: var(--mono); font-size: .72rem; letter-spacing: .06em;
+    text-transform: uppercase; padding: .3rem .65rem; border-radius: 2px;
+    white-space: nowrap; transition: background-color .3s, color .3s;
+  }
+  .chip[data-state="zayif"] { background: var(--zayif-soft); color: var(--zayif); }
+  .chip[data-state="orta"]  { background: var(--orta-soft);  color: var(--orta); }
+  .chip[data-state="guclu"] { background: var(--guclu-soft); color: var(--guclu); }
+
+  .aciklama { font-size: .9rem; color: var(--ink-soft); min-height: 3.6em; }
+  .aciklama strong { color: var(--ink); font-weight: 600; }
+
+  .block-label {
+    font-family: var(--mono); font-size: .68rem; letter-spacing: .1em;
+    text-transform: uppercase; color: var(--ink-faint);
+    padding-top: .3rem; border-top: 1px solid var(--line-soft);
+  }
+
+  /* ---------- dayanım eğrisi ---------- */
+  .egri { width: 100%; height: auto; display: block; overflow: visible; }
+  .egri-izgara { stroke: var(--line-soft); stroke-width: 1; }
+  .egri-eksen { stroke: var(--line); stroke-width: 1; }
+  .egri-28 { stroke: var(--ink-faint); stroke-width: 1; stroke-dasharray: 3 3; }
+  .egri-cizgi {
+    fill: none; stroke: var(--accent); stroke-width: 2.5;
+    stroke-linejoin: round; stroke-linecap: round;
+  }
+  .egri-alan { fill: var(--accent-soft); opacity: .55; }
+  .egri-nokta { fill: var(--accent); stroke: var(--surface); stroke-width: 2.5; }
+  .egri-imlec { stroke: var(--accent); stroke-width: 1; opacity: .45; }
+  .egri-yazi { font-family: var(--mono); font-size: 8px; fill: var(--ink-faint); }
+  @keyframes ciz { from { stroke-dashoffset: 900; } to { stroke-dashoffset: 0; } }
+  .egri-cizgi.acilis { stroke-dasharray: 900; animation: ciz 1.1s cubic-bezier(.4, 0, .2, 1) .3s backwards; }
+
+  /* ---------- su/çimento ölçeği ---------- */
+  .meter { display: flex; flex-direction: column; gap: .3rem; }
+  .meter-top {
+    display: flex; align-items: baseline; justify-content: space-between; gap: .6rem;
+    font-family: var(--mono); font-size: .8rem; font-variant-numeric: tabular-nums;
+  }
+  .meter-name { color: var(--ink-soft); letter-spacing: .04em; }
+  /* bandın dışı "tehlike" değil, yalnızca olağan aralığın dışı: nötr zemin */
+  .meter-band {
+    position: relative; height: 16px; border: 1px solid var(--line);
+    border-radius: 2px; overflow: hidden; background: var(--surface-sunk);
+  }
+  .band-safe {
+    position: absolute; top: 0; bottom: 0; background: var(--guclu-soft);
+    border-left: 1px solid var(--line-soft); border-right: 1px solid var(--line-soft);
+  }
+  /* renk körlüğünde de görünsün diye olağan bandın sınırlarına tik */
+  .band-safe::before, .band-safe::after {
+    content: ""; position: absolute; top: 0; bottom: 0; width: 1px; background: var(--ink-faint);
+  }
+  .band-safe::before { left: 0; }
+  .band-safe::after { right: 0; }
+  .band-mark {
+    position: absolute; top: -1px; bottom: -1px; width: 2px; background: var(--ink);
+    transition: left .5s cubic-bezier(.22, 1, .36, 1);
+  }
+  .meter-scale {
+    position: relative; height: 1.15em;
+    font-family: var(--mono); font-size: .64rem; color: var(--ink-faint);
+    font-variant-numeric: tabular-nums;
+  }
+  .meter-scale span { position: absolute; transform: translateX(-50%); white-space: nowrap; }
+  .meter-scale span:first-child { transform: none; }
+  .meter-scale span:last-child { transform: translateX(-100%); }
+
+  /* ---------- sınıf merdiveni ---------- */
+  .sinif-kutu { overflow-x: auto; }
+  .sinif-ladder { display: flex; gap: 2px; min-width: min-content; }
+  .sinif-cell {
+    flex: 1 0 auto; min-width: 44px; text-align: center; padding: .4rem .25rem;
+    border: 1px solid var(--line); border-radius: 2px;
+    font-family: var(--mono); font-size: .66rem; color: var(--ink-faint);
+    background: var(--surface); transition: background-color .3s, color .3s, border-color .3s;
+  }
+  .sinif-cell[data-ulasildi="1"] { background: var(--accent-soft); color: var(--accent); border-color: var(--accent-soft); }
+  .sinif-cell[data-simdiki="1"] { background: var(--accent); color: var(--surface); border-color: var(--accent); font-weight: 600; }
+
+  .uyari-not { font-size: .78rem; color: var(--ink-faint); }
+
+  /* ---------- TS EN 206-1 kartı ---------- */
+  .std-ozet { display: grid; grid-template-columns: repeat(auto-fit, minmax(9rem, 1fr)); gap: 1px;
+    background: var(--line-soft); border: 1px solid var(--line-soft); border-radius: 3px; overflow: hidden; }
+  .std-hucre { background: var(--surface); padding: .7rem .85rem; display: flex; flex-direction: column; gap: .05rem; }
+  .std-num { font-family: var(--mono); font-size: 1.3rem; font-variant-numeric: tabular-nums; letter-spacing: -.02em; }
+  .std-lbl { font-family: var(--mono); font-size: .62rem; letter-spacing: .08em;
+    text-transform: uppercase; color: var(--ink-faint); }
+  .std-alt { font-size: .74rem; color: var(--ink-faint); }
+  /* birim ve matematik sembolleri büyük harfe çevrilmemeli: σ -> Σ, MPa -> MPA olurdu */
+  .sembol { text-transform: none; }
+  .sembol sub { font-size: .75em; }
+
+  .kontrol { width: 100%; border-collapse: collapse; font-size: .85rem; }
+  .kontrol th {
+    font-family: var(--mono); font-size: .62rem; letter-spacing: .08em; text-transform: uppercase;
+    color: var(--ink-faint); text-align: left; font-weight: 400;
+    padding: .35rem .5rem; border-bottom: 1px solid var(--line);
+  }
+  .kontrol th:not(:first-child), .kontrol td:not(:first-child) { text-align: right; }
+  .kontrol td { padding: .5rem; border-bottom: 1px solid var(--line-soft); font-variant-numeric: tabular-nums; }
+  .kontrol tr:last-child td { border-bottom: none; }
+  .kontrol .sayi { font-family: var(--mono); }
+  .rozet {
+    font-family: var(--mono); font-size: .64rem; letter-spacing: .05em; text-transform: uppercase;
+    padding: .18rem .45rem; border-radius: 2px; white-space: nowrap;
+  }
+  .rozet[data-d="uygun"]  { background: var(--guclu-soft); color: var(--guclu); }
+  .rozet[data-d="degil"]  { background: var(--zayif-soft); color: var(--zayif); }
+  .rozet[data-d="yok"]    { background: var(--surface-sunk); color: var(--ink); }
+  .kontrol-kutu { overflow-x: auto; }
+
+  /* ---------- alt bölüm ---------- */
+  .about { display: grid; gap: 1.25rem; }
+  @media (min-width: 760px) { .about { grid-template-columns: 1.35fr 1fr; align-items: start; } }
+  .about p { max-width: 60ch; color: var(--ink-soft); font-size: .92rem; }
+  .about p + p { margin-top: .7rem; }
+  .about h2 {
+    font-family: var(--mono); font-size: .7rem; letter-spacing: .12em;
+    text-transform: uppercase; color: var(--ink-soft); margin-bottom: .7rem;
+  }
+
+  .stats {
+    display: grid; grid-template-columns: repeat(2, 1fr); gap: 1px;
+    background: var(--line-soft); border: 1px solid var(--line-soft);
+    border-radius: 3px; overflow: hidden;
+  }
+  .stat { background: var(--surface); padding: .8rem .9rem; display: flex; flex-direction: column; gap: .1rem; }
+  .stat-num {
+    font-family: var(--mono); font-size: 1.3rem;
+    font-variant-numeric: tabular-nums; letter-spacing: -.02em;
+  }
+  .stat-lbl {
+    font-family: var(--mono); font-size: .64rem; letter-spacing: .08em;
+    text-transform: uppercase; color: var(--ink-faint);
+  }
+
+  footer {
+    border-top: 1px solid var(--line); padding-top: 1.25rem;
+    display: flex; flex-direction: column; gap: .6rem;
+    font-size: .82rem; color: var(--ink-soft);
+  }
+  footer .caution { color: var(--ink); }
+  footer .sig { font-family: var(--mono); font-size: .76rem; color: var(--ink-faint); }
+
+  /* ---------- mobil şerit ---------- */
+  .mobile-bar {
+    display: none; position: fixed; left: 0; right: 0; bottom: 0; z-index: 20;
+    background: var(--surface); border-top: 1px solid var(--line);
+    padding: .6rem clamp(1rem, 4vw, 2rem);
+    align-items: center; justify-content: space-between; gap: .75rem;
+    font-family: var(--mono); font-variant-numeric: tabular-nums;
+  }
+  .mobile-bar .mb-num { font-size: 1.15rem; }
+  .mobile-bar .mb-lbl {
+    font-size: .64rem; letter-spacing: .08em; text-transform: uppercase;
+    color: var(--ink-faint); display: block;
+  }
+  @media (max-width: 899px) {
+    .mobile-bar { display: flex; }
+    .wrap { padding-bottom: 6rem; }
+    /* klavye odağı sabit şeridin arkasına düşmesin */
+    html { scroll-padding-bottom: 6rem; }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+      animation-duration: .001ms !important; animation-delay: 0ms !important;
+      transition-duration: .001ms !important;
+    }
+  }
+</style>
+
+<div class="wrap" lang="tr">
+
+  <header class="masthead">
+    <!-- lang="en": Türkçe text-transform "HUAWEİ" üretiyor, marka adı için İngilizce kural doğru -->
+    <p class="eyebrow">Türkiye Yapay Zeka Akademisi &times; <span lang="en">Huawei Student Developers</span></p>
+    <h1>Betonu kırmadan dayanımını kestirebilir miyiz?</h1>
+    <p class="lead">
+      Şantiyede numune kür havuzuna girer ve 28 gün beklenir. Bu sayfa iki iş yapıyor: bir makine
+      öğrenmesi modeliyle karışımın basınç dayanımını tahmin ediyor, sonra bu tahmini TS EN 206-1'in
+      karakteristik dayanım ve etki sınıfı şartlarıyla karşılaştırıyor. Deneme karışımlarını
+      azaltmaya yarayan bir ön eleme aracı; karışım hesabının yerine geçmez.
+    </p>
+    <p class="masthead-links">
+      <a href="https://github.com/furkansenyuz/beton-dayanimi-tahmini">Kod ve defter</a>
+      <!-- Medium yazısı yayımlanınca yorumu açın: <a href="MEDIUM_LINKI">Yazının tamamı</a> -->
+      <a href="https://archive.ics.uci.edu/dataset/165/concrete+compressive+strength">Veri seti</a>
+    </p>
+  </header>
+
+  <div class="unitbar">
+    <span class="unitbar-lbl" id="unit-label">Birim sistemi</span>
+    <div class="seg" role="radiogroup" aria-labelledby="unit-label">
+      <label>AB<input type="radio" name="unit" value="AB" checked></label>
+      <label>ABD<input type="radio" name="unit" value="US"></label>
+    </div>
+    <span class="unitbar-active" id="unit-caption">kg/m³ &middot; MPa</span>
+  </div>
+
+  <main class="panel">
+
+    <section class="card recete">
+      <div class="card-head">
+        <h2 class="card-title">Karışım reçetesi</h2>
+        <button class="btn-reset" id="reset" type="button">Sıfırla</button>
+      </div>
+
+      <div class="scn-block">
+        <p class="scn-hint">Hazır karışımlar. Her biri veri setinden alınmış gerçek bir numune:</p>
+        <div class="scn-list" id="scn-list"></div>
+      </div>
+
+      <div class="fields">
+        <div class="field">
+          <div class="field-top">
+            <label class="field-label" for="age">Numune yaşı</label>
+            <span class="field-value"><span id="age-v">28</span><span class="unit">gün</span></span>
+          </div>
+          <div class="slider-wrap">
+            <div class="slider-rail"></div><div class="slider-band" id="age-band"></div>
+            <input type="range" id="age" min="1" max="365" step="1" value="28">
+          </div>
+        </div>
+
+        <div class="field">
+          <div class="field-top">
+            <label class="field-label" for="cement">Çimento</label>
+            <span class="field-value"><span id="cement-v">290</span><span class="unit u-doz">kg/m³</span></span>
+          </div>
+          <div class="slider-wrap">
+            <div class="slider-rail"></div><div class="slider-band" id="cement-band"></div>
+            <input type="range" id="cement" min="102" max="540" step="1" value="290">
+          </div>
+        </div>
+
+        <div class="field">
+          <div class="field-top">
+            <label class="field-label" for="water">Su</label>
+            <span class="field-value"><span id="water-v">168</span><span class="unit u-doz">kg/m³</span></span>
+          </div>
+          <div class="slider-wrap">
+            <div class="slider-rail"></div><div class="slider-band" id="water-band"></div>
+            <input type="range" id="water" min="121" max="247" step="1" value="168">
+          </div>
+        </div>
+
+        <div class="field">
+          <div class="field-top">
+            <label class="field-label" for="slag">Cüruf</label>
+            <span class="field-value"><span id="slag-v">0</span><span class="unit u-doz">kg/m³</span></span>
+          </div>
+          <div class="slider-wrap">
+            <div class="slider-rail"></div><div class="slider-band" id="slag-band"></div>
+            <input type="range" id="slag" min="0" max="360" step="1" value="0">
+          </div>
+        </div>
+
+        <div class="field">
+          <div class="field-top">
+            <label class="field-label" for="ash">Uçucu kül</label>
+            <span class="field-value"><span id="ash-v">96</span><span class="unit u-doz">kg/m³</span></span>
+          </div>
+          <div class="slider-wrap">
+            <div class="slider-rail"></div><div class="slider-band" id="ash-band"></div>
+            <input type="range" id="ash" min="0" max="201" step="1" value="96">
+          </div>
+        </div>
+
+        <div class="field">
+          <div class="field-top">
+            <label class="field-label" for="superplastic">Süperakışkanlaştırıcı</label>
+            <span class="field-value"><span id="superplastic-v">9.4</span><span class="unit u-doz">kg/m³</span></span>
+          </div>
+          <div class="slider-wrap">
+            <div class="slider-rail"></div><div class="slider-band" id="superplastic-band"></div>
+            <input type="range" id="superplastic" min="0" max="32" step="0.1" value="9.4">
+          </div>
+        </div>
+      </div>
+
+      <details class="ekstra">
+        <summary>Agregalar</summary>
+        <div class="fields">
+          <div class="field">
+            <div class="field-top">
+              <label class="field-label" for="coarseagg">İri agrega</label>
+              <span class="field-value"><span id="coarseagg-v">961</span><span class="unit u-doz">kg/m³</span></span>
+            </div>
+            <div class="slider-wrap">
+              <div class="slider-rail"></div><div class="slider-band" id="coarseagg-band"></div>
+              <input type="range" id="coarseagg" min="801" max="1145" step="1" value="961">
+            </div>
+          </div>
+          <div class="field">
+            <div class="field-top">
+              <label class="field-label" for="fineagg">İnce agrega</label>
+              <span class="field-value"><span id="fineagg-v">865</span><span class="unit u-doz">kg/m³</span></span>
+            </div>
+            <div class="slider-wrap">
+              <div class="slider-rail"></div><div class="slider-band" id="fineagg-band"></div>
+              <input type="range" id="fineagg" min="594" max="993" step="1" value="865">
+            </div>
+          </div>
+        </div>
+      </details>
+
+      <p class="block-label">Kullanım koşulu ve üretim</p>
+      <div class="fields">
+        <div class="field">
+          <label class="field-label" for="etki">Etki sınıfı (TS EN 206-1 Çizelge 1)</label>
+          <select id="etki" class="secim"></select>
+        </div>
+        <div class="field">
+          <label class="field-label" for="cimento-tipi">Çimento tipi</label>
+          <select id="cimento-tipi" class="secim">
+            <option value="0.4">CEM I 42,5 ve üstü (uçucu kül k = 0,4)</option>
+            <option value="0.2">CEM I 32,5 (uçucu kül k = 0,2)</option>
+            <option value="0">Diğer (k kavramı uygulanmaz)</option>
+          </select>
+        </div>
+        <div class="field">
+          <label class="field-label" for="uretim">Uygunluk kriteri (Çizelge 14)</label>
+          <select id="uretim" class="secim">
+            <option value="surekli">Sürekli imalat, n≥15: fcm ≥ fck + 1,48σ</option>
+            <option value="baslangic">Başlangıç imalatı, n=3: fcm ≥ fck + 4</option>
+          </select>
+        </div>
+        <div class="field" id="sigma-alan">
+          <div class="field-top">
+            <label class="field-label" for="sigma">Üretim standart sapması <span class="sembol">σ</span></label>
+            <span class="field-value"><span id="sigma-v">5.0</span><span class="unit">MPa</span></span>
+          </div>
+          <div class="slider-wrap">
+            <div class="slider-rail"></div><div class="slider-band" id="sigma-band"></div>
+            <input type="range" id="sigma" min="2" max="8" step="0.5" value="5">
+          </div>
+        </div>
+      </div>
+
+      <p class="uyari-not" style="margin-top:auto; padding-top:.4rem">
+        Kaydırıcılardaki açık bant, veri setindeki karışımların çoğunun bulunduğu aralık.
+        Modelin gördüğü en düşük ve en yüksek değerler kaydırıcıların uçları.
+      </p>
+    </section>
+
+    <section class="card tahmin">
+      <div class="card-head">
+        <h2 class="card-title">Tahmin edilen dayanım</h2>
+        <span class="card-title" style="letter-spacing:.06em">Random forest</span>
+      </div>
+
+      <p id="durum-ozeti" role="status" class="gorsel-gizli"></p>
+      <div>
+        <div class="sonuc">
+          <span class="sonuc-num" id="mpa">37.3</span>
+          <span class="sonuc-birim" id="mpa-u">MPa</span>
+          <span class="chip" id="verdict" data-state="orta">Orta dayanım</span>
+        </div>
+        <p class="sonuc-alt"><span id="mpa-alt">5412 psi</span> &middot; model sapması &plusmn;<span id="rmse-v">5.2</span> <span id="rmse-u">MPa</span></p>
+        <p class="aciklama" id="aciklama" style="margin-top:.6rem"></p>
+      </div>
+
+      <p class="block-label">Aynı karışımın yaşa göre dayanım eğrisi (gün / MPa)</p>
+      <svg class="egri" id="egri" viewBox="0 0 320 158" role="img" aria-labelledby="egri-title">
+        <title id="egri-title">Numune yaşına göre tahmin edilen basınç dayanımı eğrisi</title>
+        <g id="egri-izgara"></g>
+        <path class="egri-alan" id="egri-alan" d=""></path>
+        <path class="egri-cizgi acilis" id="egri-cizgi" d=""></path>
+        <line class="egri-imlec" id="egri-imlec" x1="0" y1="0" x2="0" y2="0"></line>
+        <circle class="egri-nokta" id="egri-nokta" r="4.5" cx="0" cy="0"></circle>
+      </svg>
+
+    </section>
+  </main>
+
+  <section class="card std">
+    <div class="card-head">
+      <h2 class="card-title">TS EN 206-1 değerlendirmesi</h2>
+      <span class="card-title" id="std-etki" style="letter-spacing:.06em"></span>
+    </div>
+
+    <div class="std-ozet">
+      <div class="std-hucre">
+        <span class="std-num" id="std-fcm">43.3</span>
+        <span class="std-lbl"><span class="sembol">f<sub>cm</sub></span> tahmini (<span class="sembol">MPa</span>)</span>
+        <span class="std-alt">model ortalaması, ±5.2 MPa</span>
+      </div>
+      <div class="std-hucre">
+        <span class="std-num" id="std-pay">7.4</span>
+        <span class="std-lbl">güvenlik payı (<span class="sembol">MPa</span>)</span>
+        <span class="std-alt" id="std-pay-alt">Çizelge 14, 1,48σ</span>
+      </div>
+      <div class="std-hucre">
+        <span class="std-num" id="std-fck">35.9</span>
+        <span class="std-lbl"><span class="sembol">f<sub>ck</sub></span> tahmini (<span class="sembol">MPa</span>)</span>
+        <span class="std-alt">karakteristik dayanım</span>
+      </div>
+      <div class="std-hucre">
+        <span class="std-num" id="std-sinif">C35/45</span>
+        <span class="std-lbl">ulaşılan sınıf</span>
+        <span class="std-alt"><span class="sembol">f<sub>ck</sub></span> üzerinden</span>
+      </div>
+    </div>
+
+    <p class="uyari-not" id="std-baglayici"></p>
+
+    <div class="kontrol-kutu">
+      <table class="kontrol">
+        <thead>
+          <tr><th>Çizelge F.1 şartı</th><th>Sınır</th><th>Bu karışım</th><th>Durum</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>En büyük su/çimento oranı</td>
+            <td class="sayi" id="lim-sc">0,50</td><td class="sayi" id="var-sc">0,57</td>
+            <td><span class="rozet" id="rz-sc">-</span></td>
+          </tr>
+          <tr>
+            <td>En küçük dayanım sınıfı</td>
+            <td class="sayi" id="lim-sinif">C30/37</td><td class="sayi" id="var-sinif">C35/45</td>
+            <td><span class="rozet" id="rz-sinif">-</span></td>
+          </tr>
+          <tr>
+            <td>En az çimento içeriği (kg/m³)</td>
+            <td class="sayi" id="lim-cim">300</td><td class="sayi" id="var-cim">313</td>
+            <td><span class="rozet" id="rz-cim">-</span></td>
+          </tr>
+          <tr>
+            <td>En az hava içeriği (%)</td>
+            <td class="sayi" id="lim-hava">-</td><td class="sayi">veri yok</td>
+            <td><span class="rozet" id="rz-hava">-</span></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <p class="block-label">Su / çimento oranı</p>
+    <div class="meter">
+      <div class="meter-top">
+        <span class="meter-name">SU / ÇİMENTO</span>
+        <span id="sc-v">0.57</span>
+      </div>
+      <div class="meter-band">
+        <div class="band-safe" style="left:9.1%; right:78.8%"></div>
+        <div class="band-mark" id="sc-mark" style="left:20%"></div>
+      </div>
+      <div class="meter-scale">
+        <span style="left:0">0.25</span><span style="left:9.09%">0.40</span>
+        <span style="left:21.21%">0.60</span><span style="left:100%">1.90</span>
+      </div>
+    </div>
+
+    <p class="block-label">Ulaşılan dayanım sınıfı</p>
+    <div class="sinif-kutu"><div class="sinif-ladder" id="sinif-ladder"></div></div>
+    <p class="uyari-not" id="sinif-not" style="display:none"></p>
+
+    <p class="block-label">Bu değerlendirmenin kapsamadıkları</p>
+    <p class="uyari-not">
+      Veri seti çimento tipini ve dayanım sınıfını, agreganın en büyük tane büyüklüğünü (D<sub>maks</sub>),
+      hava içeriğini, klorür sınıfını ve kıvam sınıfını içermiyor. Bunlar olmadan TS EN 206-1'e uygun
+      bir beton tanımı yapılamaz. Sayfa bir <strong>ön eleme aracıdır</strong>: deneme karışımlarını
+      azaltmaya yarar, karışım hesabının ve laboratuvar deneme dökümünün yerine geçmez.
+    </p>
+    <p class="uyari-not">
+      Sınır değerler TS EN 206-1/Nisan 2002 Çizelge F.1'den alınmıştır. Bu ek <em>bilgi için</em>
+      verilmiştir ve CEM I çimento içindir; bağlayıcı değerler betonun kullanılacağı yerde geçerli
+      hükümlerdir (Türkiye'de TS 13515). Uçucu kül k-değeri Madde 5.2.5.2.2'ye göre uygulanıyor:
+      uçucu kül/çimento oranının 0,33'ü aşan kısmı hesaba katılmıyor. Standart cüruf için k-değeri
+      tanımlamadığından cüruf bağlayıcı olarak sayılmıyor. Karakteristik dayanım Çizelge 14
+      uygunluk kriterinin tersine çevrilmesiyle tahmin ediliyor; gerçek sınıf beyanı ancak
+      belirtilen sayıda gerçek deney sonucuyla yapılır.
+    </p>
+  </section>
+
+  <section class="about">
+    <div>
+      <h2>Bu sayfa ne yapıyor</h2>
+      <p>
+        Sayfa iki katmandan oluşuyor ve ikisini karıştırmamak önemli. Üstteki katman
+        <strong>istatistiksel</strong>: makine öğrenmesi modeli karışımdan bir dayanım
+        <em>ortalaması</em> tahmin ediyor. Alttaki katman <strong>kuralcı</strong>: TS EN 206-1'in
+        Çizelge 14 uygunluk kriteri ve Çizelge F.1 sınır değerleri, tahmin üzerinde deterministik
+        olarak işletiliyor. Bir tahmini doğrudan beton sınıfı saymak yaygın bir hata; sınıf
+        karakteristik dayanımla tanımlı, ortalamayla değil.
+      </p>
+      <p>
+        Model, 1030 gerçek beton numunesinin karışım oranları ve kırım sonuçlarıyla eğitildi.
+        Girdiler bir metreküp betona giren malzeme miktarları ve numunenin yaşı. Çıktı, o
+        numunenin basınç dayanımı.
+      </p>
+      <p>
+        Doğrusal regresyon bu işte 0.63'te kaldı, çünkü beton doğrusal davranmıyor: çimentoyu iki
+        katına çıkarmak dayanımı iki katına çıkarmıyor. Polinom regresyon 0.78'e, random forest ise
+        0.89'a ulaştı.
+      </p>
+      <p>
+        Reçeteye bir de su/çimento oranı eklendi. Bu sütun veride hazır durmuyor, sudan ve
+        çimentodan hesaplanıyor. Tek başına suyun dayanımla ilişkisi zayıfken (-0.29), oranın
+        ilişkisi belirgin şekilde güçlü (-0.50). Şantiyede yıllardır konuşulan şeyin veriye
+        yansıması bu.
+      </p>
+      <p>
+        Yukarıdaki eğri, aynı karışımın farklı yaşlarda modele sorulmasıyla çiziliyor. Eğrinin yer
+        yer düzleşmesi ya da hafif geri gitmesi betonun davranışı değil, modelin davranışı: random
+        forest basamaklı tahmin üretir ve veride az örneği olan yaşlarda emin olamaz.
+      </p>
+    </div>
+    <div>
+      <h2>Test seti başarımı</h2>
+      <div class="stats">
+        <div class="stat"><span class="stat-num">0.89</span><span class="stat-lbl">R² (random forest)</span></div>
+        <div class="stat"><span class="stat-num">5.2</span><span class="stat-lbl">RMSE (MPa)</span></div>
+        <div class="stat"><span class="stat-num">0.78</span><span class="stat-lbl">R² (polinom)</span></div>
+        <div class="stat"><span class="stat-num">0.63</span><span class="stat-lbl">R² (doğrusal)</span></div>
+      </div>
+      <p style="margin-top:.7rem; font-size:.82rem">
+        Modelin daha önce görmediği 206 numunede test edildi. Ortalama sapması 5.2 MPa, yani C25
+        ile C30 arasındaki fark kadar. Bir ön fikir verir, numune kırımının yerini tutmaz.
+      </p>
+    </div>
+  </section>
+
+  <footer>
+    <p class="caution">
+      Eğitim amaçlı bir çalışmadır. Bu sayfadaki tahminler standart numune deneyinin yerine
+      geçmez ve hiçbir döküm, kabul ya da tasarım kararına dayanak yapılamaz. Beton dayanımı
+      şartnamelerin öngördüğü deneylerle belirlenir.
+    </p>
+    <p>
+      Veri seti: Concrete Compressive Strength, Yeh, I-C. (1998), UCI Machine Learning Repository.
+    </p>
+    <p class="sig">Furkan Şenyüz</p>
+  </footer>
+</div>
+
+<div class="mobile-bar">
+  <div>
+    <span class="mb-lbl">Tahmin</span>
+    <span class="mb-num"><span id="mb-mpa">37.3</span> <span id="mb-u">MPa</span></span>
+  </div>
+  <span class="chip" id="mb-verdict" data-state="orta">Orta</span>
+</div>
+
+<script>
+  const MODEL = /*__MODEL__*/;
+
+  // özellik sırası: cement, slag, ash, water, superplastic, coarseagg, fineagg, age, su_cimento
+  function ormanTahmini(x) {
+    // scikit-learn ağaç girdisini float32'ye çeviriyor, aynı sonucu almak için burada da çeviriyoruz
+    const z = x.map(Math.fround);
+    let toplam = 0;
+    for (const agac of MODEL) {
+      let i = 0;
+      while (agac.f[i] >= 0) i = z[agac.f[i]] <= agac.t[i] ? agac.l[i] : agac.r[i];
+      toplam += agac.p[i];
+    }
+    return toplam / MODEL.length;
+  }
+
+  // ---- birim sistemleri ---------------------------------------------------
+  // model her zaman veri setinin kendi birimlerini görür: kg/m³ ve MPa.
+  const KGM3_LBYD3 = 1.6855549;      // 1 kg/m³ = 1.68555 lb/yd³
+  const MPA_PSI = 145.0377;          // 1 MPa = 145.04 psi
+
+  const SISTEM = {
+    AB: {
+      ozet: "kg/m³ · MPa",
+      doz:   { birim: "kg/m³", goster: (v) => v, basamak: 1 },
+      day:   { birim: "MPa", goster: (v) => v, basamak: 1 },
+      alt:   (mpa) => `${Math.round(mpa * MPA_PSI)} psi`,
+    },
+    US: {
+      ozet: "lb/yd³ · psi",
+      doz:   { birim: "lb/yd³", goster: (v) => v * KGM3_LBYD3, basamak: 0 },
+      day:   { birim: "psi", goster: (v) => v * MPA_PSI, basamak: 0 },
+      alt:   (mpa) => `${mpa.toFixed(1)} MPa`,
+    },
+  };
+
+  // veri setindeki gerçek aralıklar ve olağan bant (%25-%75), hep kg/m³ ve gün
+  // veri setindeki gerçek en küçük/en büyük değerler ve ölçüm ızgarasının adımı.
+  // kaydırıcılar her zaman bu ızgarada (kg/m³, gün) çalışır; birim seçimi yalnızca
+  // etiketi değiştirir, böylece seçilebilen her değer veri setinin çözünürlüğünde kalır.
+  const SINIR = {
+    age:          { min: 1,     max: 365,    adim: 1,   q1: 7,     q3: 56 },
+    cement:       { min: 102,   max: 540,    adim: 0.1, q1: 192.4, q3: 350 },
+    water:        { min: 121.8, max: 247,    adim: 0.1, q1: 164.9, q3: 192 },
+    slag:         { min: 0,     max: 359.4,  adim: 0.1, q1: 0,     q3: 143 },
+    ash:          { min: 0,     max: 200.1,  adim: 0.1, q1: 0,     q3: 118.3 },
+    superplastic: { min: 0,     max: 32.2,   adim: 0.1, q1: 0,     q3: 10.2 },
+    coarseagg:    { min: 801,   max: 1145,   adim: 0.1, q1: 932,   q3: 1029.4 },
+    fineagg:      { min: 594,   max: 992.6,  adim: 0.1, q1: 731,   q3: 824 },
+  };
+  const DOZ_ALANLARI = ["cement", "water", "slag", "ash", "superplastic", "coarseagg", "fineagg"];
+  const TUM_ALANLAR = ["age", ...DOZ_ALANLARI];
+  const EGRI_YASLARI = [1, 3, 7, 14, 28, 56, 90, 180, 365];
+  const SC_MIN = 0.25, SC_MAX = 1.9;
+  const MODEL_RMSE = 5.24;   // test setinde ölçülen sapma, MPa
+
+  // TS EN 206-1/Nisan 2002, Çizelge F.1 "Beton karışımı ve özellikleri için önerilen sınır değerler".
+  // Ek F bilgi içindir ve CEM I çimento varsayar. sc: en büyük su/çimento, sinif: en küçük dayanım
+  // sınıfı, cim: en az çimento (kg/m3), hava: en az hava içeriği (%). null = şart yok.
+  const CIZELGE_F1 = {
+    X0:  { sc: null, sinif: "C12/15", cim: null, hava: null, ad: "Korozyon veya zararlı etki tehlikesi yok" },
+    XC1: { sc: 0.65, sinif: "C20/25", cim: 260, hava: null, ad: "Kuru veya sürekli ıslak" },
+    XC2: { sc: 0.60, sinif: "C25/30", cim: 280, hava: null, ad: "Islak, nadiren kuru" },
+    XC3: { sc: 0.55, sinif: "C30/37", cim: 280, hava: null, ad: "Orta derecede nemli" },
+    XC4: { sc: 0.50, sinif: "C30/37", cim: 300, hava: null, ad: "Çevrimli ıslak ve kuru" },
+    XS1: { sc: 0.50, sinif: "C30/37", cim: 300, hava: null, ad: "Deniz suyu, tuzlu hava" },
+    XS2: { sc: 0.45, sinif: "C35/45", cim: 320, hava: null, ad: "Deniz suyu, sürekli batmış" },
+    XS3: { sc: 0.45, sinif: "C35/45", cim: 340, hava: null, ad: "Deniz suyu, med-cezir ve serpinti" },
+    XD1: { sc: 0.55, sinif: "C30/37", cim: 300, hava: null, ad: "Deniz suyu dışı klorür, orta nemli" },
+    XD2: { sc: 0.55, sinif: "C30/37", cim: 300, hava: null, ad: "Deniz suyu dışı klorür, ıslak" },
+    XD3: { sc: 0.45, sinif: "C35/45", cim: 320, hava: null, ad: "Deniz suyu dışı klorür, çevrimli" },
+    XF1: { sc: 0.55, sinif: "C30/37", cim: 300, hava: null, ad: "Donma/çözülme, buz çözücü yok" },
+    XF2: { sc: 0.55, sinif: "C25/30", cim: 300, hava: 4.0,  ad: "Donma/çözülme, buz çözücülü" },
+    XF3: { sc: 0.50, sinif: "C30/37", cim: 320, hava: 4.0,  ad: "Donma/çözülme, yüksek su doygunluğu" },
+    XF4: { sc: 0.45, sinif: "C30/37", cim: 340, hava: 4.0,  ad: "Donma/çözülme, buz çözücülü ve doygun" },
+    XA1: { sc: 0.55, sinif: "C30/37", cim: 300, hava: null, ad: "Az zararlı kimyasal ortam" },
+    XA2: { sc: 0.50, sinif: "C30/37", cim: 320, hava: null, ad: "Orta zararlı kimyasal ortam" },
+    XA3: { sc: 0.45, sinif: "C35/45", cim: 360, hava: null, ad: "Çok zararlı kimyasal ortam" },
+  };
+  const SINIF_FCK = { "C12/15": 12, "C16/20": 16, "C20/25": 20, "C25/30": 25, "C30/37": 30,
+                      "C35/45": 35, "C40/50": 40, "C45/55": 45, "C50/60": 50 };
+
+  // veri setinden alınmış gerçek numuneler
+  // hepsi TEST setinden: model bu numuneleri eğitim sırasında görmedi.
+  // sonuncusu, modelin en çok şaştığı test numunesi.
+  const SENARYOLAR = [
+    { ad: "Tipik yapısal beton", gercek: 41.0, cement: 313.0, slag: 145.0, ash: 0.0, water: 178.0, superplastic: 8.0, coarseagg: 1002.0, fineagg: 689.0, age: 28 },
+    { ad: "Yüksek dayanımlı", gercek: 74.5, cement: 389.9, slag: 189.0, ash: 0.0, water: 145.9, superplastic: 22.0, coarseagg: 944.7, fineagg: 755.8, age: 28 },
+    { ad: "Az çimentolu karışım", gercek: 10.5, cement: 145.0, slag: 0.0, ash: 179.0, water: 202.0, superplastic: 8.0, coarseagg: 824.0, fineagg: 869.0, age: 28 },
+    { ad: "Genç beton", gercek: 19.4, cement: 250.2, slag: 166.8, ash: 0.0, water: 203.5, superplastic: 0.0, coarseagg: 977.6, fineagg: 694.1, age: 7 },
+    { ad: "Cüruf ve kül katkılı", gercek: 44.3, cement: 276.4, slag: 116.0, ash: 90.3, water: 179.6, superplastic: 8.9, coarseagg: 870.1, fineagg: 768.3, age: 28 },
+    { ad: "Modelin şaştığı numune", gercek: 44.5, cement: 313.0, slag: 145.0, ash: 0.0, water: 127.0, superplastic: 8.0, coarseagg: 1000.0, fineagg: 822.0, age: 28 },
+  ];
+
+  const durumlar = { ...SENARYOLAR[0] };   // her zaman kg/m³ ve gün
+  let sistem = "AB";
+  let aktifSenaryo = SENARYOLAR[0];   // seçili hazır karışım, yoksa null
+  let etkiSinifi = "XC4", kUcucuKul = 0.4, uretim = "surekli", sigma = 5;
+  let uygunSayisi = 0, toplamSart = 0;   // ekran okuyucu özeti için
+
+  const el = (id) => document.getElementById(id);
+  const yaz = (id, m) => { el(id).textContent = m; };
+  const kirp = (v, a, b) => Math.min(Math.max(v, a), b);
+  const azHareket = () => window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+  const ozellikler = (d, yas) => [d.cement, d.slag, d.ash, d.water, d.superplastic,
+                                  d.coarseagg, d.fineagg, yas, d.water / d.cement];
+
+  // ---- senaryo düğmeleri --------------------------------------------------
+  SENARYOLAR.forEach((s, i) => {
+    const b = document.createElement("button");
+    b.type = "button"; b.className = "scn"; b.textContent = s.ad;
+    b.setAttribute("aria-pressed", i === 0 ? "true" : "false");
+    b.addEventListener("click", () => {
+      document.querySelectorAll(".scn").forEach((o) => o.setAttribute("aria-pressed", "false"));
+      b.setAttribute("aria-pressed", "true");
+      aktifSenaryo = s;
+      hedefeGit(s);
+    });
+    el("scn-list").appendChild(b);
+  });
+
+  let animasyon = null;
+  function hedefeGit(hedef) {
+    if (animasyon) cancelAnimationFrame(animasyon);
+    const bas = { ...durumlar };
+    const bitir = () => { TUM_ALANLAR.forEach((k) => { durumlar[k] = hedef[k]; }); sliderlariKur(); hesapla(); };
+    if (azHareket()) { bitir(); return; }
+    const sure = 750, t0 = performance.now();
+    const yumusak = (t) => 1 - Math.pow(1 - t, 3);
+    const adim = (simdi) => {
+      const t = Math.min((simdi - t0) / sure, 1), k = yumusak(t);
+      TUM_ALANLAR.forEach((a) => { durumlar[a] = bas[a] + (hedef[a] - bas[a]) * k; });
+      hesapla();
+      if (t < 1) animasyon = requestAnimationFrame(adim);
+      else { animasyon = null; bitir(); }
+    };
+    animasyon = requestAnimationFrame(adim);
+  }
+
+  const senaryoSecimiTemizle = () => {
+    aktifSenaryo = null;
+    document.querySelectorAll(".scn").forEach((o) => o.setAttribute("aria-pressed", "false"));
+  };
+
+  // ---- kaydırıcı kurulumu -------------------------------------------------
+  // birim değişince aralıkları yeniden kur. slider'dan geri okuma yapmıyoruz;
+  // kaynak doğru her zaman durumlar[] içindeki kg/m³ değeri, böylece kayma olmuyor.
+  function sliderlariKur() {
+    const S = SISTEM[sistem];
+    TUM_ALANLAR.forEach((id) => {
+      const k = el(id), sn = SINIR[id];
+      k.min = sn.min; k.max = sn.max; k.step = sn.adim;
+      k.value = durumlar[id];
+    });
+    document.querySelectorAll(".u-doz").forEach((e) => { e.textContent = S.doz.birim; });
+    yaz("mpa-u", S.day.birim);
+    yaz("mb-u", S.day.birim);
+    yaz("unit-caption", S.ozet);
+    sinifMerdiveniKur();
+  }
+
+  // merdiven her zaman TS EN 206-1 dayanım sınıflarıyla, birim seçiminden bağımsız
+  function sinifMerdiveniKur() {
+    const liste = el("sinif-ladder");
+    liste.innerHTML = "";
+    [["C16/20",16],["C20/25",20],["C25/30",25],["C30/37",30],["C35/45",35],["C40/50",40]]
+      .map(([ad, esik]) => ({ ad, esik })).forEach((c) => {
+      const d = document.createElement("div");
+      d.className = "sinif-cell"; d.textContent = c.ad; d.dataset.esik = c.esik;
+      liste.appendChild(d);
+    });
+  }
+
+  function bantlariKur() {
+    Object.entries(SINIR).forEach(([id, s]) => {
+      const bant = el(id + "-band");
+      if (!bant) return;
+      const sol = (s.q1 - s.min) / (s.max - s.min);
+      const sag = (s.q3 - s.min) / (s.max - s.min);
+      bant.style.left = `calc(7px + ${sol * 100}% - ${sol * 14}px)`;
+      bant.style.width = `calc(${(sag - sol) * 100}% - ${(sag - sol) * 14}px)`;
+    });
+  }
+
+  // ---- dayanım eğrisi -----------------------------------------------------
+  const G = { sol: 30, sag: 8, ust: 10, alt: 22, en: 320, boy: 158, yMax: 90 };
+  const xKonum = (yas) => G.sol + (Math.log(yas) / Math.log(365)) * (G.en - G.sol - G.sag);
+  const yKonum = (mpa) => G.boy - G.alt - (kirp(mpa, 0, G.yMax) / G.yMax) * (G.boy - G.ust - G.alt);
+
+  function izgaraKur() {
+    const g = el("egri-izgara");
+    let s = "";
+    [0, 20, 40, 60, 80].forEach((v) => {
+      s += `<line class="egri-izgara" x1="${G.sol}" y1="${yKonum(v)}" x2="${G.en - G.sag}" y2="${yKonum(v)}"></line>`;
+      s += `<text class="egri-yazi" x="${G.sol - 5}" y="${yKonum(v) + 3}" text-anchor="end">${v}</text>`;
+    });
+    [1, 7, 28, 90, 365].forEach((y) => {
+      s += `<text class="egri-yazi" x="${xKonum(y)}" y="${G.boy - 8}" text-anchor="middle">${y}</text>`;
+    });
+    s += `<line class="egri-28" x1="${xKonum(28)}" y1="${G.ust}" x2="${xKonum(28)}" y2="${G.boy - G.alt}"></line>`;
+    s += `<text class="egri-yazi" x="${xKonum(28) + 4}" y="${G.ust + 8}">28. gün</text>`;
+    s += `<line class="egri-eksen" x1="${G.sol}" y1="${G.boy - G.alt}" x2="${G.en - G.sag}" y2="${G.boy - G.alt}"></line>`;
+    g.innerHTML = s;
+  }
+
+  function egriCiz(yasDegerleri) {
+    const noktalar = yasDegerleri.map(([yas, mpa]) => `${xKonum(yas).toFixed(1)},${yKonum(mpa).toFixed(1)}`);
+    el("egri-cizgi").setAttribute("d", "M " + noktalar.join(" L "));
+    const ilk = xKonum(yasDegerleri[0][0]).toFixed(1);
+    const son = xKonum(yasDegerleri[yasDegerleri.length - 1][0]).toFixed(1);
+    const taban = G.boy - G.alt;
+    el("egri-alan").setAttribute("d", `M ${ilk},${taban} L ${noktalar.join(" L ")} L ${son},${taban} Z`);
+  }
+
+  // ---- açıklama -----------------------------------------------------------
+  function aciklamaYaz(mpa, yas, mpa28, sc) {
+    const S = SISTEM[sistem];
+    const bicim = (v) => `${S.day.goster(v).toFixed(S.day.basamak)} ${S.day.birim}`;
+    let metin;
+    if (yas < 28) {
+      const kalan = 28 - Math.round(yas);
+      metin = `Numune henüz <strong>${Math.round(yas)} günlük</strong> ve ${bicim(mpa)} taşıyor. ` +
+              `Model, aynı karışımın 28. günde <strong>${bicim(mpa28)}</strong> olacağını tahmin ediyor. ` +
+              `Kırım için ${kalan} gün daha var.`;
+    } else if (yas > 28) {
+      metin = `${Math.round(yas)} günlük numune için tahmin ${bicim(mpa)}. ` +
+              `Aynı karışım 28. günde ${bicim(mpa28)} veriyordu, aradaki fark betonun kür süresince kazandığı dayanım.`;
+    } else {
+      metin = `Standart 28 günlük kırım için tahmin <strong>${bicim(mpa)}</strong>.`;
+    }
+    if (sc > 0.7) {
+      metin += ` Su/çimento oranı ${sc.toFixed(2)} ile yüksek; ` +
+               (durumlar.slag + durumlar.ash > 60
+                 ? `ama karışımdaki ${durumlar.slag > 30 && durumlar.ash > 30 ? "cüruf ve uçucu kül" : durumlar.slag > 30 ? "cüruf" : "uçucu kül"} bunun bir kısmını telafi ediyor.`
+                 : "bu oran dayanımı aşağı çeken en güçlü etken.");
+    } else if (sc < 0.4) {
+      metin += ` Su/çimento oranı ${sc.toFixed(2)} ile oldukça düşük, yüksek dayanımın asıl sebebi bu.`;
+    }
+    // seçili karışım test setinden gerçek bir numuneyse kırım sonucuyla karşılaştır
+    if (aktifSenaryo && aktifSenaryo.gercek !== undefined && Math.round(durumlar.age) === aktifSenaryo.age) {
+      const g = aktifSenaryo.gercek, sapma = Math.abs(mpa - g);
+      metin += ` Bu numunenin gerçek kırım sonucu ${bicim(g)}` +
+        (sapma > 10
+          ? `, yani model <strong>${bicim(sapma)} şaşmış</strong>. Test setindeki en büyük hatası bu.`
+          : `, model ${bicim(sapma)} sapmış.`);
+    }
+    el("aciklama").innerHTML = metin;
+  }
+
+  // ---- TS EN 206-1 değerlendirmesi ----------------------------------------
+  function sinifBul(fck) {
+    let bulunan = null;
+    Object.entries(SINIF_FCK).forEach(([ad, v]) => { if (fck >= v) bulunan = ad; });
+    return bulunan;
+  }
+
+  function standartDegerlendir(fcm28, sc) {
+    const F = CIZELGE_F1[etkiSinifi];
+    yaz("std-etki", `${etkiSinifi} · Çizelge F.1`);
+
+    // Çizelge 14 uygunluk kriterinin tersi: fck = fcm - pay
+    const pay = uretim === "surekli" ? 1.48 * sigma : 4;
+    const fck = fcm28 - pay;
+    const ulasilan = sinifBul(fck);
+    yaz("std-fcm", fcm28.toFixed(1));
+    yaz("std-pay", pay.toFixed(1));
+    yaz("std-pay-alt", uretim === "surekli" ? `Çizelge 14, 1,48σ (σ=${sigma.toFixed(1)})` : "Çizelge 14, n=3 için +4");
+    yaz("std-fck", fck.toFixed(1));
+    yaz("std-sinif", ulasilan || "C12/15 altı");
+    yaz("sigma-v", sigma.toFixed(1));
+
+    // Madde 5.2.5.2.2: uçucu kül/çimento oranının 0,33'ü aşan kısmı sayılmaz.
+    // Standart cüruf için k-değeri tanımlamıyor, cüruf bağlayıcıya katılmıyor.
+    const kulSayilan = Math.min(durumlar.ash, 0.33 * durumlar.cement);
+    const baglayici = durumlar.cement + kUcucuKul * kulSayilan;
+    const etkinSc = durumlar.water / baglayici;
+    yaz("std-baglayici",
+      kUcucuKul > 0 && durumlar.ash > 0
+        ? `Etkin bağlayıcı: ${durumlar.cement.toFixed(0)} kg çimento + ${kUcucuKul} × ` +
+          `${kulSayilan.toFixed(0)} kg uçucu kül = ${baglayici.toFixed(0)} kg/m³. ` +
+          (durumlar.ash > kulSayilan
+            ? `Karışımdaki ${durumlar.ash.toFixed(0)} kg külün ${(durumlar.ash - kulSayilan).toFixed(0)} kg'ı 0,33 sınırı nedeniyle sayılmadı. `
+            : "") +
+          `Etkin su/bağlayıcı oranı ${etkinSc.toFixed(2)}.` +
+          (durumlar.slag > 0 ? ` Karışımdaki ${durumlar.slag.toFixed(0)} kg cüruf, standart k-değeri tanımlamadığı için sayılmadı.` : "")
+        : `Bağlayıcı olarak yalnızca ${durumlar.cement.toFixed(0)} kg/m³ çimento sayıldı, su/çimento oranı ${sc.toFixed(2)}.` +
+          (durumlar.slag > 0 ? ` Karışımdaki ${durumlar.slag.toFixed(0)} kg cüruf sayılmadı: standart, k-değeri kavramını uçucu kül ve silis dumanı için tanımlıyor, cüruf için tanımlamıyor.` : "") +
+          (durumlar.ash > 0 && kUcucuKul === 0 ? ` Seçilen çimento tipinde k-değeri kavramı uygulanmadığı için ${durumlar.ash.toFixed(0)} kg uçucu kül de sayılmadı.` : ""));
+
+    uygunSayisi = 0; toplamSart = 0;
+    const rozet = (id, durum, metin) => {
+      const e = el(id); e.dataset.d = durum;
+      e.textContent = metin || { uygun: "uygun", degil: "uygun değil", yok: "şart yok" }[durum];
+      if (durum === "uygun") { uygunSayisi++; toplamSart++; }
+      else if (durum === "degil") toplamSart++;
+    };
+
+    // 1) su/çimento
+    if (F.sc === null) { yaz("lim-sc", "-"); yaz("var-sc", etkinSc.toFixed(2)); rozet("rz-sc", "yok"); }
+    else {
+      yaz("lim-sc", F.sc.toFixed(2).replace(".", ","));
+      yaz("var-sc", etkinSc.toFixed(2).replace(".", ","));
+      rozet("rz-sc", etkinSc <= F.sc ? "uygun" : "degil");
+    }
+    // 2) dayanım sınıfı
+    yaz("lim-sinif", F.sinif);
+    yaz("var-sinif", ulasilan || "C12/15 altı");
+    rozet("rz-sinif", (SINIF_FCK[ulasilan] || 0) >= SINIF_FCK[F.sinif] ? "uygun" : "degil");
+    // 3) en az çimento (k-değeri katkısı dahil bağlayıcı)
+    if (F.cim === null) { yaz("lim-cim", "-"); yaz("var-cim", baglayici.toFixed(0)); rozet("rz-cim", "yok"); }
+    else {
+      yaz("lim-cim", String(F.cim));
+      yaz("var-cim", baglayici.toFixed(0));
+      rozet("rz-cim", baglayici >= F.cim ? "uygun" : "degil");
+    }
+    // 4) hava içeriği: veri setinde yok
+    if (F.hava === null) { yaz("lim-hava", "-"); rozet("rz-hava", "yok"); }
+    else { yaz("lim-hava", F.hava.toFixed(1).replace(".", ",")); rozet("rz-hava", "yok", "veri yok"); }
+
+    // sınıf merdiveni artık fck üzerinden
+    const hucreler = [...document.querySelectorAll(".sinif-cell")];
+    let simdiki = -1;
+    hucreler.forEach((h, i) => { if (fck >= +h.dataset.esik) simdiki = i; });
+    hucreler.forEach((h, i) => {
+      h.dataset.ulasildi = i <= simdiki ? "1" : "0";
+      h.dataset.simdiki = i === simdiki ? "1" : "0";
+    });
+    const not = el("sinif-not");
+    if (simdiki < 0 && hucreler.length) {
+      not.style.display = "";
+      not.textContent = `Karakteristik dayanım, listedeki en düşük sınıfın (${hucreler[0].textContent}) altında kalıyor.`;
+    } else not.style.display = "none";
+  }
+
+  // ---- ana hesap ----------------------------------------------------------
+  function hesapla() {
+    const S = SISTEM[sistem];
+
+    TUM_ALANLAR.forEach((id) => {
+      const yas = id === "age";
+      const deger = (yas ? Math.round(durumlar[id]) : S.doz.goster(durumlar[id]))
+        .toFixed(yas ? 0 : S.doz.basamak);
+      const birim = yas ? "gün" : S.doz.birim;
+      yaz(id + "-v", deger);
+      el(id).value = durumlar[id];
+      el(id).setAttribute("aria-valuetext", `${deger} ${birim}`);   // ekran okuyucu birimiyle okusun
+    });
+
+    const sc = durumlar.water / durumlar.cement;
+    const mpa = ormanTahmini(ozellikler(durumlar, durumlar.age));
+    const mpa28 = ormanTahmini(ozellikler(durumlar, 28));
+
+    const s = mpa >= 45 ? "guclu" : mpa >= 25 ? "orta" : "zayif";
+    const uzun = { zayif: "Düşük dayanım", orta: "Orta dayanım", guclu: "Yüksek dayanım" }[s];
+    const kisa = { zayif: "Düşük", orta: "Orta", guclu: "Yüksek" }[s];
+
+    yaz("mpa", S.day.goster(mpa).toFixed(S.day.basamak));
+    yaz("mb-mpa", S.day.goster(mpa).toFixed(S.day.basamak));
+    yaz("mpa-alt", S.alt(mpa));
+    yaz("rmse-v", S.day.goster(MODEL_RMSE).toFixed(S.day.basamak));
+    yaz("rmse-u", S.day.birim);
+    el("verdict").dataset.state = s; yaz("verdict", uzun);
+    el("mb-verdict").dataset.state = s; yaz("mb-verdict", kisa);
+
+    // eğri
+    const egriNoktalari = EGRI_YASLARI.map((y) => [y, ormanTahmini(ozellikler(durumlar, y))]);
+    egriCiz(egriNoktalari);
+    const cx = xKonum(kirp(durumlar.age, 1, 365)), cy = yKonum(mpa);
+    el("egri-nokta").setAttribute("cx", cx.toFixed(1));
+    el("egri-nokta").setAttribute("cy", cy.toFixed(1));
+    const im = el("egri-imlec");
+    im.setAttribute("x1", cx.toFixed(1)); im.setAttribute("x2", cx.toFixed(1));
+    im.setAttribute("y1", cy.toFixed(1)); im.setAttribute("y2", G.boy - G.alt);
+
+    yaz("sc-v", sc.toFixed(2));
+    el("sc-mark").style.left = kirp((sc - SC_MIN) / (SC_MAX - SC_MIN), 0, 1) * 100 + "%";
+
+    standartDegerlendir(mpa28, sc);
+    aciklamaYaz(mpa, durumlar.age, mpa28, sc);
+
+    yaz("durum-ozeti",
+        `Tahmin edilen dayanım ${S.day.goster(mpa).toFixed(S.day.basamak)} ${S.day.birim}, ` +
+        `${uzun.toLocaleLowerCase("tr")}. Su çimento oranı ${sc.toFixed(2)}. ` +
+        `Karakteristik dayanım ${el("std-fck").textContent} MPa, ulaşılan sınıf ${el("std-sinif").textContent}. ` +
+        `${etkiSinifi} etki sınıfı için ${toplamSart} şartın ${uygunSayisi} tanesi sağlanıyor.`);
+  }
+
+  // ---- olaylar ------------------------------------------------------------
+  TUM_ALANLAR.forEach((id) => {
+    el(id).addEventListener("input", () => {
+      if (animasyon) { cancelAnimationFrame(animasyon); animasyon = null; }
+      // kaydırıcı değeri zaten veri setinin biriminde, çevirmeye gerek yok
+      durumlar[id] = kirp(+el(id).value, SINIR[id].min, SINIR[id].max);
+      senaryoSecimiTemizle();
+      hesapla();
+    });
+  });
+
+  document.querySelectorAll('input[name="unit"]').forEach((r) =>
+    r.addEventListener("change", () => { sistem = r.value; sliderlariKur(); hesapla(); })
+  );
+
+  el("reset").addEventListener("click", () => {
+    document.querySelectorAll(".scn").forEach((o, i) => o.setAttribute("aria-pressed", i === 0 ? "true" : "false"));
+    aktifSenaryo = SENARYOLAR[0];
+    hedefeGit(SENARYOLAR[0]);
+  });
+
+  // etki sınıfı listesi
+  Object.entries(CIZELGE_F1).forEach(([kod, v]) => {
+    const o = document.createElement("option");
+    o.value = kod; o.textContent = `${kod} — ${v.ad}`;
+    if (kod === etkiSinifi) o.selected = true;
+    el("etki").appendChild(o);
+  });
+  el("etki").addEventListener("change", (e) => { etkiSinifi = e.target.value; hesapla(); });
+  el("cimento-tipi").addEventListener("change", (e) => { kUcucuKul = +e.target.value; hesapla(); });
+  el("uretim").addEventListener("change", (e) => {
+    uretim = e.target.value;
+    el("sigma-alan").style.display = uretim === "surekli" ? "" : "none";
+    hesapla();
+  });
+  el("sigma").addEventListener("input", (e) => { sigma = +e.target.value; hesapla(); });
+
+  izgaraKur();
+  bantlariKur();
+  // üretim standart sapmasında tipik aralık (3-6 MPa) işareti
+  (() => {
+    const sb = el("sigma-band"), a = 2, b = 8, s1 = (3 - a) / (b - a), s2 = (6 - a) / (b - a);
+    sb.style.left = `calc(7px + ${s1 * 100}% - ${s1 * 14}px)`;
+    sb.style.width = `calc(${(s2 - s1) * 100}% - ${(s2 - s1) * 14}px)`;
+  })();
+  sliderlariKur();
+  hesapla();
+</script>
